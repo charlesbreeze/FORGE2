@@ -73,7 +73,9 @@ Supply a label that you want to use for the plotting titles, and filenames.
 =item B<f>
 
 Supply the name of a file containing a list of SNPs. 
+
 Format must be given by the -format flag. 
+
 If not supplied the analysis is performed either on snps provided as rsids in a comma separated list through the snps option 
 or on a set of data from a default GWAS* study. Note that 5* SNPs are required at a minimum.
 
