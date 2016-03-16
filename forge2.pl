@@ -1,84 +1,154 @@
 #!/usr/bin/perl
 
 =head1 NAME
+
 forge2.pl - Functional element Overlap analysis of the Results of Genome Wide Association Study (GWAS) Experiments 2.
+
 =head1 SYNOPSIS
+
 forge2.pl options (-f file) (-snp snplist)
+
 =head1 DESCRIPTION
+
 Analyse a set of SNPs for their overlap with DNase 1 Hypersensitive Site (DHS) hotspots and Histone marks compared to matched background SNPs. 
 Identifies enrichment in DHS/Histone marks by tissue and plots graphs and table to display. Arbitrarily a minumum of 5+ SNPs is required.  
 Note that if no SNPs are given the script will run on A DEFAULT GWAS* as an example output.
+
 Several outputs are made.
+
 A straight base R graphics pdf chart of the data.
+
 A polychart (https://github.com/Polychart/polychart2) interactive javascript graphic using rCharts (http://ramnathv.github.io/rCharts/).
+
 A dimple (http://dimplejs.org) d3 interactive graphic using rCharts.
+
 A table using the Datatables (https://datatables.net) plug-in for the jQuery Javascript library, again accessed through rCharts.
+
 In each of the graphics the colouring should be consistent. Blue (p value > 0.05), light red or pink (0.05 => p value > 0.01), red or dark red (p value <= 0.01 ) for the 95% and 99% cIs. 
 Or whatever other thresholds are specified. 
+
 Forge2 functions, plotting options and stats are provided by Forge2::Forge2, Forge2::Plot and Forge2::Stats modules.
+
 =head1 OPTIONS
+
 =over
+
 =item B<data>
+
 Dataset to analyse. 2015 Roadmap Epigenome histone mark data to choose from (h3k4me1, h3k4me3, h3k9me3, h3k36me3 or h3k27me3). h3k4me1 by default.
+
 =item B<peaks>
+
 Use peaks instead of hotspots. Peaks are more stringent DNase1 peaks calls representing DNase hypersensitive sites, 
 rather than hotspots which are regions of generalised DNase1 sensitivity or open chromatin. Default is to use hotspots.
+
 =item B<bkgd>
+
 Specify whether the background matches should be picked from general set of arrays used in GWAS ('gwas') or from the Illumina_HumanOmni2.5 ('omni'). General GWAS arrays include
+
 Affy_GeneChip_100K_Array
+
 Affy_GeneChip_500K_Array
+
 Affy_SNP6
+
 HumanCNV370-Quadv3
+
 HumanHap300v2
+
 HumanHap550v3.0
+
 Illumina_Cardio_Metabo
+
 Illumina_Human1M-duoV3
+
 Illumina_Human660W-quad
+
 Defaults to 'gwas'. In both cases SNPs have to be on the arrays AND in the 1000 genomes phase 1 integrated call data set at phase1/analysis_results/integrated_call_sets.
+
 =item B<label>
+
 Supply a label that you want to use for the plotting titles, and filenames.
+
 =item B<f>
+
 Supply the name of a file containing a list of SNPs. 
 Format must be given by the -format flag. 
 If not supplied the analysis is performed either on snps provided as rsids in a comma separated list through the snps option 
 or on a set of data from a default GWAS* study. Note that 5* SNPs are required at a minimum.
+
 =item B<snps>
+
 Can provide the snps as rsids in a comma separated list.
+
 =item B<min_snps>
+
 Specify the minimum number of SNPs to be allowed. Default is 5 now we are using binomial test.
+
 =item B<thresh>
+
 Alter the default binomial p value thresholds. Give a comma separate list of two e.g. 0.05,0.01 for the defaults
+
 =item B<format>
+
 If f is specified, specify the file format as follow:
+
 rsid = list of snps as rsids each on a separate line. Optionally can add other fields after the rsid which are ignored, 
+
 unless the pvalue filter is specified, in which case Forge2 assumes that the second field is the minus log10 pvalue
+
 bed  = File given is a bed file of locations (chr\tbeg\tend).  bed format should be 0 based and the chromosome should be given as chrN. 
+
 However we will also accept chomosomes as just N (ensembl) and 1-based format where beg and end are the same*.
+
 tabix = File contains SNPs in tabix format.
+
 ian = 1-based chr\tbeg\tend\trsid\tpval\tminuslog10pval
+
 =item B<filter>
+
 Set a filter on the SNPs based on the -log10 pvalue.  This works for files in the 'ian' or 'rsid' format. 
 Give a value as the lower threshold and only SNPs with -log10 pvalues >= to the threshold will be analysed. Default is no filtering.
+
 =item B<bkgrd>
+
 Output background stats for investigation.
+
 =item B<reps>
+
 The number of background matching sets to pick and analyse. Default 1000*.
+
 =item B<ld>
+
 Apply filter for SNPs in LD at either r2 >= 0.8 ("high LD"), or r2 >= 0.1 ("independent SNPs"). Specify ld 0.8, or ld 0.1. Default is to filter at r2 >= 0.8.  With ld filter specified, forge2 will report SNPs removed due to LD with another SNP in the list and will randomly pick one for each LD block.
 To turn off LD filtering specify -nold
+
 =item B<nold>
+
 Turn off LD filtering.
+
 =item B<depletion>
+
 Analyse for DHS/Histone mark depletion pattern instead of the default DHS/Histone mark enrichment analysis. Use when dealing with datasets suspected not to overlap with DHS. Specifying depletion will be indicated on the label (the text "Depletion Analysis" will be added to the file label).
+
 =item B<noplot>
+
 Just make the data file, don't plot.
+
 =item B<help|h|?>
+
 Print a brief help message and exits.
+
 =item B<man|m>
+
 Print this perldoc and exit.
+
 =back
+
 =head1 LICENCE
+
 forge2.pl Functional analysis of GWAS SNPs
+
 Copyright (C) 2015  EMBL - European Bioinformatics Institute and University College London
 This program is free software: you can redistribute it and/or modify it under the terms of
 the GNU General Public License as published by the Free Software Foundation, either version 3
@@ -90,10 +160,15 @@ this software without prior written permission. For written permission, please c
 c.breeze@ucl.ac.uk. Products derived from this software may not be called forge2.pl nor may forge2.pl
 appear in their names without prior written permission of the developers. You should have received
 a copy of the GNU General Public License along with this program.  If not, see http://www.gnu.org/licenses/.
+
 =head1 AUTHOR
+
 Charles Breeze, UCL and EBI
+
 =head1 CONTACT
+
 Charles Breeze <c.breeze@ucl.ac.uk>
+
 =cut
 
 use strict;
