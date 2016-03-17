@@ -161,6 +161,10 @@ sub match{
         %bins = %{ retrieve($bins) };
         %params = %{ retrieve($params)};
     }
+    else {
+        print STDERR "No accessory files found, please double-check your installation [$bins / $params]\n";
+        exit(0); #Note: I'm not sure what is the cleanest way to exit here
+    }
     my (%picks);
 
     
