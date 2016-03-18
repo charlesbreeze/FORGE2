@@ -120,14 +120,18 @@ sub process_file {
 			next if /^track/;
 			chomp;
 			my ($chr, $beg, $end) = split "\t", $_;
-			unless ($chr =~ /^chr/){
-			    $chr = "chr". $chr;
-			}
-			$loc = "$chr:$beg-$beg";
+                unless ($chr =~ /^chr/){
+                    $chr = "chr". $chr;
+                }
+                if(!defined($beg)) {
+                    print STDERR "ERROR: Parsing error in input file: Probably the wrong file format was selected [$format]\n";
+                    exit(1);
+                }
+                $loc = "$chr:$beg-$beg";
 		    }
 		    elsif ($format =~ /tabix/){
-			chomp;
-			$loc = $_;
+                chomp;
+                $loc = $_;
 		    }
             #get the $rsid from the db
 		    my $rsid = fetch_rsid($loc, $sth);
@@ -223,6 +227,12 @@ sub process_bits{
             #($location, $rsid, undef, undef, undef, undef, undef, undef, $bit_string, $maf, $tss, $gc) = @$row;
     }
         #$test{'SNPS'}{$rsid}{'SUM'} =$sum;
+        
+        if(!defined($maf) or !defined($tss) or !defined($gc)) {
+            print STDERR "ERROR: The data type specified [$data] is not recognised in this database\n";
+            exit(1);
+        }
+        
         $test{'SNPS'}{$rsid}{'PARAMS'} = join("\t", $maf, $tss, $gc);
         die if (scalar(@$cells) ne length($bit_string));
         foreach my $index (@indexes) {
