@@ -8,10 +8,10 @@ use Sort::Naturally;
 =head1 NAME
     Forge2::Plot2 - Plotting utilities for Forge2
 =head1 VERSION
-Version 0.01
+Version 0.02
 =cut
 
-    our $VERSION = '0.01';
+    our $VERSION = '0.02';
 
 our (@ISA, @EXPORT, @EXPORT_OK);
 use Exporter;
@@ -59,17 +59,17 @@ results\$TissueCell <- apply(results[, c('Tissue', 'Cell')], 1, paste, collapse 
 results\$TissueCell <- factor(results\$TissueCell, levels=tissue.cell.order2)
 # Plot an empty chart first
 pdf('$chart', width=22.4, height=8)
-ymax = max(-log10(results\$Pvalue), na.rm=TRUE)*1.1
+ymax = max(-log10(results\$Pvalue), na.rm=TRUE)*1.7
 ymin = -0.1
 par(mar=c(15.5,4,3,1)+0.1)
-plot(NA,ylab='', xlab='', main='SNPs in DNase1 sites (probably TF sites) in cell lines for $data $label',
+plot(NA,ylab='', xlab='', main='SNPs in Histone mark (broadPeak) sites in cell lines for $data $label',
     ylim=c(ymin,ymax), las=2, pch=19, col = results\$Class2, xaxt='n', xlim=c(0,length(levels(results\$TissueCell))), cex.main=2)
 # Add horizontal guide lines for the Y-axis
 abline(h=par('yaxp')[1]:par('yaxp')[2],lty=1, lwd=0.1, col='#e0e0e0')
 # Add vertical lines and labels to separate the tissues
 tissues <- c(0, cumsum(summary(tissue.cell.order[,'Tissue'])))
 abline(v=tissues[2:(length(tissues)-1)]+0.5, lty=6, col='$tline')
-text((tissues[1:(length(tissues)-1)] + tissues[2:length(tissues)]) / 2 + 0.5, ymax, names(tissues[2:length(tissues)]), col='$tline', adj=1, srt=90, cex=1.4) 
+text((tissues[1:(length(tissues)-1)] + tissues[2:length(tissues)]) / 2 + 0.5, ymax, names(tissues[2:length(tissues)]), col='$tline', adj=1, srt=90, cex=1.4)
 # Add points (internal color first)
 palette(c('$sig', '$msig', 'white'))
 points(results\$TissueCell, -log10(results\$Pvalue), pch=19, col = results\$Class2, xaxt='n')
@@ -124,11 +124,11 @@ results\$TissueCell <- factor(results\$TissueCell, levels=tissue.cell.order2)
 # Count number of cell types for each tissue (to be able to draw the vertical separation lines afterwards
 tissues <- c(0, cumsum(summary(tissue.cell.order[,'Tissue'])))
 require(rCharts)
-dplot.height=900
+dplot.height=1100 #Was 900
 dplot.width=2000
 bounds.x=60
 bounds.y=50
-bounds.height=dplot.height - 300
+bounds.height=dplot.height - 500 #Was -300
 bounds.width=dplot.width - bounds.x - 20
 # Create a dimple plot, showing p-value vs cell, split data by tissue, cell, snp, etc to see individual points instead of aggregate avg
 d1 <- dPlot(
@@ -146,6 +146,11 @@ d1 <- dPlot(
 d1\$xAxis( type = 'addCategoryAxis', grouporderRule = 'Cell', orderRule = tissue.cell.order[,2])
 d1\$xAxis( type = 'addCategoryAxis', grouporderRule = 'TissueCell', orderRule = as.factor(tissue.cell.order2))
 d1\$yAxis( type = 'addMeasureAxis' )
+    
+#Adding a bit of space for the labels not to overlap with significant results
+ymax = max(results\$log10pvalue, na.rm=TRUE)*1.5
+d1\$yAxis( overrideMax = ymax )
+
 # Color points according to the q-value
 d1\$colorAxis(
    type = 'addColorAxis',
