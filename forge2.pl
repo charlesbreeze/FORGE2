@@ -380,7 +380,7 @@ unless(defined $nold) {
 
 # Check we have enough SNPs
 if (scalar @snps < $min_snps) {
-    die "Fewer than $min_snps SNPs were recognised. Analysis not run\n";
+    die "Fewer than $min_snps SNPs. Analysis not run\n";
 }
 
 

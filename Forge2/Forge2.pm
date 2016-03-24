@@ -101,7 +101,13 @@ sub process_file {
 		my ($chr, $beg, $rsid) = split "\t", $_;
             unless ($chr =~ /^chr/){
                 $chr = "chr". $chr;
-	    }
+            }
+            
+            if(!defined($rsid)) {
+                print STDERR "ERROR: Parsing error in input file: Probably the wrong file format was selected [Selected format: $format]\n";
+                exit(1);
+            }
+            
             if ($rsid =~ /^rs\d+/){
                 push @snps, $rsid;
 	    }
@@ -124,7 +130,7 @@ sub process_file {
                     $chr = "chr". $chr;
                 }
                 if(!defined($beg)) {
-                    print STDERR "ERROR: Parsing error in input file: Probably the wrong file format was selected [$format]\n";
+                    print STDERR "ERROR: Parsing error in input file: Probably the wrong file format was selected [Selected format: $format]\n";
                     exit(1);
                 }
                 $loc = "$chr:$beg-$beg";
@@ -133,6 +139,12 @@ sub process_file {
                 chomp;
                 $loc = $_;
 		    }
+            
+            if($loc !~ m/^chr/) {
+                print STDERR "WARNING: Possible parsing error in input file: Please verify you have selected the right file format and all your chromosome names start with \"chr\" [Selected format: $format]\n";
+                exit(1) if($format eq "tabix");
+            }
+            
             #get the $rsid from the db
 		    my $rsid = fetch_rsid($loc, $sth);
 		    push @snps, $rsid if defined $rsid;

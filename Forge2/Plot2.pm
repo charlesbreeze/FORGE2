@@ -91,7 +91,7 @@ dev.off()
 ";
 
 #run the R code
-    system("R", "--no-save", "--quiet", "--slave", "--file=$rfile");
+    system("/usr/local/bin/R", "--no-save", "--quiet", "--slave", "--file=$rfile");
 }
 
 
@@ -220,7 +220,7 @@ d1\$setTemplate(afterScript = paste0(\"
 \"))
 d1\$save('$chart', cdn = F)\n";
 
-    system("R", "--no-save", "--quiet", "--slave", "--file=$rfile");
+    system("/usr/local/bin/R", "--no-save", "--quiet", "--slave", "--file=$rfile");
 
     if ($web) {
         $web =~ s/\/$//;
@@ -263,7 +263,7 @@ dt <- dTable(
 )
 dt\$save('$chart', cdn = F)\n";
 
-    system("R", "--no-save", "--quiet", "--slave", "--file=$rfile");
+    system("/usr/local/bin/R", "--no-save", "--quiet", "--slave", "--file=$rfile");
 
     if ($web) {
         $web =~ s/\/$//;
