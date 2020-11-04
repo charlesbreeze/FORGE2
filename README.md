@@ -7,7 +7,7 @@ https://forge2.altiusinstitute.org/
 
 FORGE2 is based on eFORGE but applies analysis to GWAS SNP data
 
-## SETUP
+## Setup
 
 1. The script itself is currently called eforge.pl written in Perl. It has
 the following Perl dependencies.
@@ -42,7 +42,7 @@ https://github.com/ramnathv/rCharts. You will need to install the latest version
 require(devtools)
 install_github('rCharts', 'ramnathv', ref = "dev")
 
-## INPUT
+## Input
 
 The input data is currently a list of RSIDs (SNPs)
 
@@ -52,7 +52,7 @@ To work SNPs currently have to be on the FORGE2 database (covering 94.2% of the 
 
 It also warns for background sets that do not have the right number of probes chosen, but this is really for information only.
 
-## OPTIONS
+## Options
 
 FORGE2 takes a series of command line options as follows
 
@@ -70,7 +70,7 @@ eforge.pl -f probeidfile -label Some_label
 
 which will by default run on Epigenome Roadmap data
 
-## OUTPUT
+## Output
 
 there are several outputs generated
 
@@ -84,10 +84,10 @@ there are several outputs generated
 
 5. There is also a tsv file of the results.
 
-## MULTITHREADING
+## Multithreading
 
 FORGE2 will automatically use multithreading if run with a Perl installation compiled with thread support. But those Perl installations that do not support multi-threading,  we also provide a single-threaded version at eforge.safe_copy_nonthreaded.pl.
 
-## WEBSERVER
+## Webserver
 
 To install the web interface, please refer to the INSTALL document in the webserver folder.
