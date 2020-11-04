@@ -39,8 +39,9 @@ https://forge2.altiusinstitute.org/?download
 
 https://github.com/ramnathv/rCharts. You will need to install the latest version e.g.
 
-require(devtools)
-install_github('rCharts', 'ramnathv', ref = "dev")
+`require(devtools)`
+
+`install_github('rCharts', 'ramnathv', ref = "dev")`
 
 ## Input
 
