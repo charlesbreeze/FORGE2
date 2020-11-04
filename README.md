@@ -35,9 +35,7 @@ https://forge2.altiusinstitute.org/?download
 
 4. An eforge.ini file in the same directory as the script. Edit this to provide the directory in which the database and hash are stored.
 
-5. An R 3.0 installation with the "devtools" and "rCharts" packages installed. See
-
-https://github.com/ramnathv/rCharts. You will need to install the latest version e.g.
+5. An R 3.0 installation with the "devtools" and "rCharts" packages installed. See https://github.com/ramnathv/rCharts. You will need to install the latest version e.g.
 
 `require(devtools)`
 
