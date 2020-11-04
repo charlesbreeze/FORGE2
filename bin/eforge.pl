@@ -190,9 +190,6 @@ use lib '/var/www/forge2/production/src/bin';
 use Data::UUID;
 use Statistics::Multtest qw(BH);
 use Data::Dumper;
-#XXX I wish our modules perl was compiled to:  use threads;
-## The /usr/bin/perl is!  Just need to set the  PERL5LIB though
-use threads;
 use List::Util qw(min);
 
 my $cwd = getcwd;
@@ -410,7 +407,10 @@ if ($num_of_valid_probes < $min_num_probes) {
 # IMPORTANT: $cells contains the list of cells in the order defined in the DB. This is critical
 # to correctly assign each bit to the right sample.
 my ($cells, $samples) = get_samples_from_dataset($dbh, $dataset);
-$dbh->disconnect(); # EDH:  Moving this up as early as possible
+my $can_use_threads = eval 'use threads; 1';
+if ($can_use_threads) { 
+    $dbh->disconnect(); # Will open a new one in each worker thread.
+}
 
 #print Dumper $cells;
 #exit -1;
@@ -460,52 +460,80 @@ foreach my $cell (@$cells) {
     push @{$overlaps_per_cell{$cell}}, 0;
 }
 
-my $worker_batch_size = int( $reps / 10 );
-my @workers = ();
-for (my $index0 = 0; $index0 < $reps; $index0 += $worker_batch_size) {
-    my $indexN = min( $index0 + $worker_batch_size, $reps ); 
+if ($can_use_threads) { 
+    # Fast version with threads
+    my $worker_batch_size = int( $reps / 10 );
+    my @workers = ();
+    for (my $index0 = 0; $index0 < $reps; $index0 += $worker_batch_size) {
+        my $indexN = min( $index0 + $worker_batch_size, $reps ); 
 
-    # Silly but keeping the same behavior:
-    #for (my $j = $index0; $j < $indexN; ++$j) {
-    #    warn "[".scalar(localtime())."] Repetition $count out of ".$reps."\n" if (++$count%100 == 0);
-    #}
+        # Silly but keeping the same behavior:
+        #for (my $j = $index0; $j < $indexN; ++$j) {
+        #    warn "[".scalar(localtime())."] Repetition $count out of ".$reps."\n" if (++$count%100 == 0);
+        #}
 
-    # This is intended to be able to go in a thread:
-    #my ($subset_total_random_probes, $subset_warnings, @subset_pick_overlaps) = worker_random_picks( $random_picks, $index0, $indexN);
+        # This is intended to be able to go in a thread:
+        #my ($subset_total_random_probes, $subset_warnings, @subset_pick_overlaps) = worker_random_picks( $random_picks, $index0, $indexN);
 
-    my $worker = threads->create('worker_random_picks', $random_picks, $index0, $indexN);
-    push @workers, $worker;
-}
-# Let's look at these and see if they are legit
-for my $worker (@workers) {
-    # Hopefully they will be running, and not yet joinable!
-    my $status = "Running? " . ($worker->is_running() ? "YES" : "NO" );
-    $status .= "\tJoinable? " . ($worker->is_joinable() ? "YES" : "NO" );
-    #print "Thread status:  $status\n";
-}
-# BOOM!  Good luck out there, little worker threads!
-threads->yield(); # just a suggestion, we will be waiting here for a while IFF it really did start other threads
-for my $worker (@workers) {
-    # Now we wait!
-    my $worker_array_ref = $worker->join();
-    my ($subset_total_random_probes, $subset_warnings, @subset_pick_overlaps) = @$worker_array_ref;
-    #warn "Worker returned " . scalar( @subset_pick_overlaps) . " pick overlaps.\n";
-    # Then unpack all the results in the main thread:
-    $total_num_probes_in_random_picks += $subset_total_random_probes;
-    if (length($subset_warnings) > 0) {
-        warn $subset_warnings;
+        my $worker = threads->create('worker_random_picks', $random_picks, $index0, $indexN);
+        push @workers, $worker;
     }
-    my $this_pick_overlaps = process_overlaps($annotated_probes, $cells, $dataset);
-    for my $this_pick_overlaps (@subset_pick_overlaps) {
+    # Let's look at these and see if they are legit
+    for my $worker (@workers) {
+        # Hopefully they will be running, and not yet joinable!
+        my $status = "Running? " . ($worker->is_running() ? "YES" : "NO" );
+        $status .= "\tJoinable? " . ($worker->is_joinable() ? "YES" : "NO" );
+        #print "Thread status:  $status\n";
+    }
+    # BOOM!  Good luck out there, little worker threads!
+    threads->yield(); # just a suggestion, we will be waiting here for a while IFF it really did start other threads
+    for my $worker (@workers) {
+        # Now we wait!
+        my $worker_array_ref = $worker->join();
+        my ($subset_total_random_probes, $subset_warnings, @subset_pick_overlaps) = @$worker_array_ref;
+        #warn "Worker returned " . scalar( @subset_pick_overlaps) . " pick overlaps.\n";
+        # Then unpack all the results in the main thread:
+        $total_num_probes_in_random_picks += $subset_total_random_probes;
+        if (length($subset_warnings) > 0) {
+            warn $subset_warnings;
+        }
+        my $this_pick_overlaps = process_overlaps($annotated_probes, $cells, $dataset);
+        for my $this_pick_overlaps (@subset_pick_overlaps) {
+            # accumulate the overlap counts by cell
+            foreach my $cell (keys %{$this_pick_overlaps->{'CELLS'}}) {
+                push @{$overlaps_per_cell{$cell}}, $this_pick_overlaps->{'CELLS'}->{$cell}->{'COUNT'}; 
+                #print Dumper "cell: [ $cell ] overlaps: $this_pick_overlaps->{'CELLS'}->{$cell}->{'COUNT'}";
+            }
+            if (defined $save_probe_annotation_stats) {
+                save_probe_annotation_stats($this_pick_overlaps, $out_dir, $lab, $count);
+            }
+        }
+    }
+} else {
+    # No thread support
+    foreach my $this_random_pick (@$random_picks) {
+        warn "[".scalar(localtime())."] Repetition $count out of ".$reps."\n" if (++$count%100 == 0);
+        $annotated_probes = get_probe_annotations_and_overlap_for_dataset($dbh, $dataset, $array, $this_random_pick);
+
+        $total_num_probes_in_random_picks += scalar @$annotated_probes;
+
+        unless (scalar @$annotated_probes == $num_of_valid_probes) {
+            warn "Random pick #$count only has " . scalar @$annotated_probes . " probes compared to $num_of_valid_probes in the input set.\n";
+        }
+
+        my $this_pick_overlaps = process_overlaps($annotated_probes, $cells, $dataset);
+
         # accumulate the overlap counts by cell
         foreach my $cell (keys %{$this_pick_overlaps->{'CELLS'}}) {
             push @{$overlaps_per_cell{$cell}}, $this_pick_overlaps->{'CELLS'}->{$cell}->{'COUNT'}; 
             #print Dumper "cell: [ $cell ] overlaps: $this_pick_overlaps->{'CELLS'}->{$cell}->{'COUNT'}";
         }
+
         if (defined $save_probe_annotation_stats) {
             save_probe_annotation_stats($this_pick_overlaps, $out_dir, $lab, $count);
         }
     }
+    $dbh->disconnect();
 }
 
 warn "[".scalar(localtime())."] All repetitions done.\n";
@@ -790,4 +818,5 @@ sub worker_random_picks {
     my @return_array = ($subset_total_num_probes_in_random_picks, $subset_warnings, @results);
     return \@return_array; # (only one value is returned from thread join!)
 }
+
 
