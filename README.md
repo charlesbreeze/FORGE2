@@ -85,7 +85,7 @@ there are several outputs generated
 
 ## Multithreading
 
-FORGE2 will automatically use multithreading if run with a Perl installation compiled with thread support. But those Perl installations that do not support multi-threading,  we also provide a single-threaded version at eforge.safe_copy_nonthreaded.pl.
+FORGE2 will automatically use multithreading if run with a Perl installation compiled with thread support. For those Perl installations that do not support multi-threading, FORGE2 will detect this and automatically use single-threaded code instead.
 
 ## Webserver
 
