@@ -12,19 +12,19 @@ FORGE2 is based on eFORGE but applies analysis to GWAS SNP data
 1. The script itself is currently called eforge.pl written in Perl. It has
 the following Perl dependencies.
 
-use 5.012;
+`use 5.012;`
 
-use warnings;
+`use warnings;`
 
-use DBI;
+`use DBI;`
 
-use Sort::Naturally;
+`use Sort::Naturally;`
 
-use Cwd;
+`use Cwd;`
 
-use Storable;
+`use Storable;`
 
-use Getopt::Long;
+`use Getopt::Long;`
 
 2. The sqlite3 db file that stores the bitstrings. This file is called forge2.db currently.
 
