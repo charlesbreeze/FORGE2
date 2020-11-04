@@ -66,7 +66,7 @@ FORGE2 takes a series of command line options as follows
  
 Some of these default as described in the perldoc. Minimally the command line is:
 
-eforge.pl -f probeidfile -label Some_label
+> eforge.pl -f probeidfile -label Some_label
 
 which will by default run on Epigenome Roadmap data
 
