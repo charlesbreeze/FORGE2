@@ -1,0 +1,15 @@
+We have provided a functionality to plot subsets of FORGE2 figures by incorporating R code for figure generation in the output of FORGE2. An example of this R code is shown at https://forge2.altiusinstitute.org/files/0x5DB893F6D51A11EB9CCA935FB5A874F8/Unnamed.GWAS.erc2-H3K4me1.chart.R for the PDF and https://forge2.altiusinstitute.org/files/0x5DB893F6D51A11EB9CCA935FB5A874F8/Unnamed.GWAS.erc2-H3K4me1.dChart.R for the interactive D3 chart. Selecting subsets of the data is as straightforward as changing the tsv file that is the input to the plotting program, or indicating subsets to be plotted within the R script. Some example code to select a subset of the data is available below: 
+
+Changing length of the tsv file input (at R script code line 2):
+
+	 results<-read.table('Unnamed.GWAS.erc2-H3K4me1.chart.tsv.gz', header=TRUE,sep='\t')
+
+could be as done with the following bash code:
+      	 
+      	 gzcat Unnamed.GWAS.erc2-H3K4me1.chart.tsv.gz |head -20 |gzip > Unnamed.GWAS.erc2-H3K4me1.chart.short.tsv.gz
+ 
+and then read into R again as a table (R):
+
+    	 results<-read.table('Unnamed.GWAS.erc2-H3K4me1.chart.short.tsv.gz', header=TRUE,sep='\t')
+
+Then the subset could be plotted using the aforementioned R code for figure generation at https://forge2.altiusinstitute.org/files/0x5DB893F6D51A11EB9CCA935FB5A874F8/Unnamed.GWAS.erc2-H3K4me1.chart.R .
