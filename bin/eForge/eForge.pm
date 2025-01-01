@@ -259,14 +259,16 @@ sub get_random_matching_picks {
         ($gc_feature, $tss_feature, $maf_feature) = assign( $gc_feature, $tss_feature, $maf_feature, \%params );
     
         #range has to be the number of probes to choose from in that hash subclass
-        my $range = scalar @{$bins{$maf_feature}{$tss_feature}{$gc_feature}};
+        #my $range = scalar @{$bins{$maf_feature}{$tss_feature}{$gc_feature}};
+        my $range = scalar @{$bins{$gc_feature}{$tss_feature}{$maf_feature}};
 
         for (my $n = 0; $n < $num_random_picks; $n++) {
             my $picked_probe_id;
             while (1) {
                 my $pick = int(rand($range));
-                $picked_probe_id = ${$bins{$maf_feature}{$tss_feature}{$gc_feature}}[$pick]; #pick the $pick'th element in the array as the chosen dmp
-                my @bed4 = split /\t/, $picked_probe_id; 
+                #$picked_probe_id = ${$bins{$maf_feature}{$tss_feature}{$gc_feature}}[$pick]; #pick the $pick'th element in the array as the chosen dmp
+  		$picked_probe_id = ${$bins{$gc_feature}{$tss_feature}{$maf_feature}}[$pick];
+		my @bed4 = split /\t/, $picked_probe_id; 
                 $picked_probe_id = $bed4[3];
                 last unless $picked_probe_id eq $probe_id; # must not pick the test dmp itself.
             }
