@@ -188,7 +188,7 @@ sub assign{
         my ($pop, $freq) = ($1, $2);
         $maf = $freq;
     }
-    my ($i, $j, $k);
+    my ($i, $j, $k) = (1, 1, 1); # initialize in case larger than max bin
     my $n = 1;
     foreach my $pc (@{$$params{'gc'}}){
         if ($gc <= $pc) {
